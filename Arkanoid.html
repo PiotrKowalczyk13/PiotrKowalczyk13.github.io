@@ -6,6 +6,11 @@
         canvas {
             border: 1px solid #d3d3d3;
             background-color: #f1f1f1;
+            padding-left: 0;
+            padding-right: 0;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
         }
     </style>
 </head>
@@ -15,10 +20,13 @@
         var myGamePiece;
         var myBall;
         var keyPressed = false;
+        var gamePaused = false;
+        var tempBallSpeedX;
+        var tempBallSpeedY;
 
         function startGame() {
-            myGamePiece = new component(100, 20, "green", 200, 280);
-            myBall = new Ball(100, 100);
+            myGamePiece = new platform(100, 20, "green", 200, 480);
+            myBall = new ball();
             myGameArea.start();
         }
 
@@ -26,7 +34,7 @@
             canvas: document.createElement("canvas"),
             start: function () {
                 this.canvas.width = 500;
-                this.canvas.height = 300;
+                this.canvas.height = 500;
                 this.context = this.canvas.getContext("2d");
                 document.body.insertBefore(this.canvas, document.body.childNodes[0]);
                 this.interval = setInterval(updateGameArea, 20);
@@ -43,7 +51,7 @@
             }
         }
 
-        function component(width, height, color, x, y) {
+        function platform(width, height, color, x, y) {
             this.width = width;
             this.height = height;
             this.speedX = 0;
@@ -68,12 +76,24 @@
             }
         }
 
-        function Ball(x, y) {
-            this.radius = 10;
-            this.speedX = 1;
-            this.speedY = 1;
-            this.x = x;
-            this.y = y;
+        function ball(x, y) {
+            this.radius = 5;
+            var selector = Math.floor(Math.random() * 2);
+            if (selector == 0) {
+                this.speedX = -2;
+            }
+            else {
+                this.speedX = 2;
+            }
+            selector = Math.floor(Math.random() * 2);
+            if (selector == 0) {
+                this.speedY = -2;
+            }
+            else {
+                this.speedY = 2;
+            }
+            this.x = Math.floor(Math.random() * (400 - 100 + 1) + 100);
+            this.y = Math.floor(Math.random() * (400 - 200 + 1) + 200);;
             this.update = function () {
                 ctx = myGameArea.context;
                 ctx.fillStyle = "blue";
@@ -100,28 +120,56 @@
                 }
                 else if (this.speedY > 0) {
                     if (this.y + this.radius > myGameArea.canvas.height) {
-                        //end game here
+                        window.alert("You lost");
+                        clearInterval(myGameArea.interval);
+                        startGame();
                     }
                 }
                 this.x += this.speedX;
                 this.y += this.speedY;
             }
             this.checkCollision = function (obj) {
-                //there goes collision with other objects
+                if ((this.speedY > 0)) {
+                    if (this.y + this.radius > obj.y) {
+                        if (this.x > obj.x && this.x < obj.x + obj.width) {
+                            this.speedY = this.speedY * (-1);
+                        }
+                        else if (this.x + this.radius >= obj.x && this.x - this.radius <= obj.x + obj.width) {
+                            this.speedX = this.speedX * (-1);
+                        }
+                    }
+                }
             }
         }
 
         function moveleft() {
-            myGamePiece.speedX = -1;
+            myGamePiece.speedX = -3;
         }
 
         function moveright() {
-            myGamePiece.speedX = 1;
+            myGamePiece.speedX = 3;
         }
 
         function clearmove() {
             myGamePiece.speedX = 0;
-            myGamePiece.speedY = 0;
+        }
+
+        function pause() {
+            if (!gamePaused) {
+                ballTempSpeedX = myBall.speedX;
+                ballTempSpeedY = myBall.speedY;
+                myBall.speedX = 0;
+                myBall.speedY = 0;
+                gamePaused = true;
+            }
+        }
+
+        function start() {
+            if (gamePaused) {
+                myBall.speedX = ballTempSpeedX;
+                myBall.speedY = ballTempSpeedY;
+                gamePaused = false;
+            }
         }
 
         function updateGameArea() {
@@ -136,16 +184,24 @@
                     keyPressed = false;
                 }
             }
+            if (gamePaused) {
+                myGamePiece.speedX = 0;
+            }
             myGamePiece.newPos();
             myGamePiece.update();
+            myBall.checkCollision(myGamePiece);
             myBall.newPos();
             myBall.update();
         }
-        
+
     </script>
-    <div style="text-align:center;width:480px;">
-        <button onmousedown="moveleft()" onmouseup="clearmove()" ontouchstart="moveleft()">LEFT</button>
-        <button onmousedown="moveright()" onmouseup="clearmove()" ontouchstart="moveright()">RIGHT</button><br><br>
+    <div style="text-align:center;width:auto;">
+        <button style="width: 100px" onmousedown="moveleft()" onmouseup="clearmove()" ontouchstart="moveleft()">LEFT</button>
+        <button style="width: 100px" onmousedown="moveright()" onmouseup="clearmove()" ontouchstart="moveright()">RIGHT</button><br><br>
+    </div>
+    <div style="text-align:center;width:auto;">
+        <button style="width: 100px" onclick="pause()">PAUSE</button>
+        <button style="width: 100px" onclick="start()">START</button><br><br>
     </div>
 </body>
 </html>
