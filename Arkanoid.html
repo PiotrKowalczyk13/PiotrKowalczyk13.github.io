@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
         canvas {
             border: 1px solid #d3d3d3;
@@ -13,6 +13,12 @@
             display: block;
         }
     </style>
+    <div style="font-size: large; text-align:right; width:63%">
+        SCORE:
+    </div>
+    <div style="font-size: large; text-align:right; width:63%" id="display">
+        Display score here
+    </div>
 </head>
 <body onload="startGame()">
     <script>
@@ -21,12 +27,22 @@
         var myBall;
         var keyPressed = false;
         var gamePaused = false;
+        var tilesArray
         var tempBallSpeedX;
         var tempBallSpeedY;
+        var score = 0;
 
         function startGame() {
             myGamePiece = new platform(100, 20, "green", 200, 480);
             myBall = new ball();
+            tilesArray = new Array(30);
+            let counter = 0;
+            for (let i = 1; i < 22; i = i + 10) {
+                for (let j = 0; j < 451; j = j + 50) {
+                    tilesArray[counter] = new tile(j, i);
+                    counter++;
+                }
+            }
             myGameArea.start();
         }
 
@@ -76,6 +92,20 @@
             }
         }
 
+        function tile(x, y) {
+            this.width = 49;
+            this.height = 9;
+            this.newPos = function () {
+                this.x = x;
+                this.y = y;
+            }
+            this.update = function () {
+                ctx = myGameArea.context;
+                ctx.fillStyle = "red";
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+        }
+
         function ball(x, y) {
             this.radius = 5;
             var selector = Math.floor(Math.random() * 2);
@@ -122,20 +152,35 @@
                     if (this.y + this.radius > myGameArea.canvas.height) {
                         window.alert("You lost");
                         clearInterval(myGameArea.interval);
+                        score = 0;
                         startGame();
                     }
                 }
                 this.x += this.speedX;
                 this.y += this.speedY;
             }
-            this.checkCollision = function (obj) {
-                if ((this.speedY > 0)) {
+            this.checkCollisionPlatform = function (obj) {
+                if (this.speedY > 0) {
                     if (this.y + this.radius > obj.y) {
                         if (this.x > obj.x && this.x < obj.x + obj.width) {
                             this.speedY = this.speedY * (-1);
                         }
                         else if (this.x + this.radius >= obj.x && this.x - this.radius <= obj.x + obj.width) {
                             this.speedX = this.speedX * (-1);
+                        }
+                    }
+                }
+            }
+            this.checkCollisionTile = function (obj) {
+                if (this.speedY < 0) {
+                    if (this.y - this.radius < obj.y + obj.height) {
+                        if (this.x > obj.x && this.x < obj.x + obj.width) {
+                            this.speedY = this.speedY * (-1);
+                            return true;
+                        }
+                        else if (this.x + this.radius >= obj.x && this.x - this.radius <= obj.x + obj.width) {
+                            this.speedX = this.speedX * (-1);
+                            return true;
                         }
                     }
                 }
@@ -172,6 +217,10 @@
             }
         }
 
+        function displayScore() {
+            document.getElementById('display').innerHTML = score;
+        }
+
         function updateGameArea() {
             myGameArea.clear();
             if (myGameArea.key) {
@@ -189,9 +238,20 @@
             }
             myGamePiece.newPos();
             myGamePiece.update();
-            myBall.checkCollision(myGamePiece);
             myBall.newPos();
             myBall.update();
+            myBall.checkCollisionPlatform(myGamePiece);
+            var checkCollision;
+            for (let i = 0; i < tilesArray.length; i++) {
+                tilesArray[i].newPos();
+                tilesArray[i].update();
+                checkCollision = myBall.checkCollisionTile(tilesArray[i]);
+                if (checkCollision == true) {
+                    tilesArray.splice(i, 1);
+                    score++;
+                }
+            }
+            displayScore();
         }
 
     </script>
