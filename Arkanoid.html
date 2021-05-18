@@ -35,21 +35,11 @@
             window.alert("Your browser doesn't support a stable version of IndexedDB.")
         }
 
+        let db;
+        let dbReq = indexedDB.open('gameStatsDB', 1);
+
         var player;
-
-        const gameDB = [];
-        function add() {
-            var request = db.transaction(["gameStats"], "readwrite")
-                .objectStore("gameStats")
-                .add({
-                    id: gameDB.length,
-                    nick: player,
-                    date: Date.getDate() + "/" + Date.getMonth() + "/" + Date.getFullYear(),
-                    points: score,
-                    gameTime: time
-                })
-        }
-
+        var time;
         var horizontalPlatform;
         var verticalPlatform = null;
         var myBall;
@@ -60,7 +50,104 @@
         var tempBallSpeedY;
         var score = 0;
 
+        dbReq.onupgradeneeded = function (event) {
+            db = event.target.result;
+            let gameStats = db.createObjectStore('gameStats', { autoIncrement: true });
+        }
+
+        dbReq.onsuccess = function (event) {
+            db = event.target.result;
+        }
+
+        dbReq.onerror = function (event) {
+            alert('Database error:' + event.target.errorCode);
+        }
+
+        function displayStats(stats) {
+            let listHTML = '<ul>';
+            if (stats.length == 0) {
+                listHTML = "List is empty";
+            }
+            else {
+                for (let i = 0; i < stats.length; i++) {
+                    let stat = stats[i];
+                    listHTML += '<li>'
+                        + ' Nickname: ' + stat.nick + ', '
+                        + ' Date: ' + stat.date + ', '
+                        + ' Points: ' + stat.points + ', '
+                        + ' Time: ' + stat.gameTime + ', '
+                        + ' Vertical Platform: ' + stat.platform;
+                }
+            }
+            document.getElementById('Scores').innerHTML = listHTML;
+        }
+
+        function getScores(db) {
+            let tx = db.transaction(['gameStats'], 'readonly');
+            let store = tx.objectStore('gameStats');
+
+            let req = store.openCursor();
+            let allStats = [];
+
+            req.onsuccess = function (event) {
+                let cursor = event.target.result;
+                if (cursor != null) {
+                    allStats.push(cursor.value);
+                    cursor.continue();
+                }
+                else {
+                    displayStats(allStats);
+                }
+            }
+
+            req.onerror = function (event) {
+                alert('Error when accessing database: ' + event.target.errorCode);
+            }
+        }
+
+        function addScore(db) {
+            let tx = db.transaction(['gameStats'], 'readwrite');
+            let store = tx.objectStore('gameStats');
+            let date = new Date;
+            let month = date.getMonth() + 1;
+            let isPlatform;
+            if (verticalPlatform) {
+                isPlatform = "Yes";
+            }
+            else {
+                isPlatform = "No";
+            }
+            let gameData = {
+                nick: player,
+                date: date.getDate() + "-" + month + "-" + date.getFullYear(),
+                points: score,
+                gameTime: time + "s",
+                platform: isPlatform
+            }
+            store.add(gameData)
+            tx.oncomplete = function () {
+                console.log('score stored');
+                getScores(db);
+            }
+            tx.onerror = function (event) {
+                alert("Error with saving to database: " + event.target.errorCode);
+            }
+        }
+
+        function timer() {
+            if (!gamePaused) {
+                time++;
+            }
+        }
+
         function startGame() {
+
+            getScores(db);
+            player = prompt("Please enter your nickname.", "Nickname");
+            if (player == null) {
+                player = "User";
+            }
+
             if (confirm('Do you want second, vertical platform?')) {
                 verticalPlatform = new platformVertical(20, 100, "green", 0, 300);
                 document.getElementById('upButton').style.display = 'block';
@@ -71,10 +158,8 @@
                 document.getElementById('downButton').style.display = 'none';
             }
 
-            player = prompt("Please enter your nickname.", "Nickname");
-            if (player == null) {
-                player = "User";
-            }
+            window.alert("Press 'Start' when you are ready.");   
+            time = 0;
             horizontalPlatform = new platformHorizontal(100, 20, "green", 200, 480);
             myBall = new ball();
             tilesArray = new Array(30);
@@ -86,6 +171,7 @@
                 }
             }
             myGameArea.start();
+            pause();
         }
 
         var myGameArea = {
@@ -96,6 +182,7 @@
                 this.context = this.canvas.getContext("2d");
                 document.body.insertBefore(this.canvas, document.body.childNodes[0]);
                 this.interval = setInterval(updateGameArea, 20);
+                this.timerInterval = setInterval(timer, 1000);
                 window.addEventListener('keydown', function (e) {
                     myGameArea.key = e.keyCode;
                     keyPressed = true;
@@ -132,7 +219,6 @@
                     }
                 }
             }
-
             this.newPos = function () {
                 if (this.speedX < 0) {
                     if (this.x > 0) {
@@ -566,25 +652,26 @@
         }
 
         function gameOver() {
+            clearmove();
             window.alert("You lost");
+            addScore(db);
             clearInterval(myGameArea.interval);
             score = 0;
-            clearmove();
             verticalPlatform = null;
             player = null;
             startGame();
         }
 
         function gameWin() {
-            window.alert("You won!");
-            clearInterval(myGameArea.interval);
             clearmove();
+            window.alert("You won!");
+            addScore(db);
+            clearInterval(myGameArea.interval);
+            score = 0;
             verticalPlatform = null;
             player = null;
             startGame();
-            score = 0;
         }
-
 
     </script>
     <div style="text-align:center;width:auto;" id="upButton">
@@ -600,7 +687,8 @@
     <div style="text-align:center;width:auto;">
         <button style="width: 100px" onclick="pause()">PAUSE</button>
         <button style="width: 100px" onclick="start()">START</button><br><br>
-    </div>
+    </div><br><br>
+    <div id="Scores"></div>
 
 </body>
 </html>
