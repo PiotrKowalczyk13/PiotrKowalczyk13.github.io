@@ -141,8 +141,6 @@
         }
 
         function startGame() {
-
-            getScores(db);
             player = prompt("Please enter your nickname.", "Nickname");
             if (player == null) {
                 player = "User";
@@ -171,6 +169,7 @@
                 }
             }
             myGameArea.start();
+            getScores(db);
             pause();
         }
 
