@@ -64,22 +64,21 @@
         }
 
         function displayStats(stats) {
-            let listHTML = '<ul>';
+            let listHTML = '';
             if (stats.length == 0) {
                 listHTML = "List is empty";
             }
             else {
                 for (let i = 0; i < stats.length; i++) {
                     let stat = stats[i];
-                    listHTML += '<li>'
-                        + ' Nickname: ' + stat.nick + ', '
-                        + ' Date: ' + stat.date + ', '
-                        + ' Points: ' + stat.points + ', '
-                        + ' Time: ' + stat.gameTime + ', '
-                        + ' Vertical Platform: ' + stat.platform;
+                    listHTML += ' Nickname: ' + stat.nick + ', '
+                                + ' Date: ' + stat.date + ', '
+                                + ' Points: ' + stat.points + ', '
+                                + ' Time: ' + stat.gameTime + ', '
+                                + ' Vertical Platform: ' + stat.platform + '\n';
                 }
             }
-            document.getElementById('Scores').innerHTML = listHTML;
+            window.alert(listHTML);
         }
 
         function getScores(db) {
@@ -127,7 +126,6 @@
             store.add(gameData)
             tx.oncomplete = function () {
                 console.log('score stored');
-                getScores(db);
             }
             tx.onerror = function (event) {
                 alert("Error with saving to database: " + event.target.errorCode);
@@ -156,7 +154,7 @@
                 document.getElementById('downButton').style.display = 'none';
             }
 
-            window.alert("Press 'Start' when you are ready.");   
+            window.alert("Press 'Start' when you are ready.");
             time = 0;
             horizontalPlatform = new platformHorizontal(100, 20, "green", 200, 480);
             myBall = new ball();
@@ -169,7 +167,7 @@
                 }
             }
             myGameArea.start();
-            getScores(db);
+            document.getElementById('display').innerHTML = score;
             pause();
         }
 
@@ -191,7 +189,8 @@
                 })
             },
             clear: function () {
-                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.context.fillStyle = 'rgba(240, 240, 240, 0.5)';
+                this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
             }
         }
 
@@ -213,7 +212,7 @@
                     }
                 }
                 else if (this.speedX > 0) {
-                    if ((this.x + this.width) < myGameArea.canvas.width){
+                    if ((this.x + this.width) < myGameArea.canvas.width) {
                         this.x += this.speedX;
                     }
                 }
@@ -390,8 +389,8 @@
             this.checkHorizontalPlatform = function (obj) {
                 if (this.speedY > 0) {
                     if (this.y + this.radius > obj.y) {
-                        if ((this.x + 0.75 * this.radius < obj.x && this.x + this.radius >= obj.x)
-                            || (this.x - 0.75 * this.radius > obj.x + obj.width && this.x - this.radius <= obj.x + obj.width)) {
+                        if ((this.x + 0.8 * this.radius < obj.x && this.x + this.radius >= obj.x)
+                            || (this.x - 0.8 * this.radius > obj.x + obj.width && this.x - this.radius <= obj.x + obj.width)) {
                             this.speedX = this.speedX * (-1);
                         }
                         else if (this.y < obj.y) {
@@ -402,8 +401,8 @@
                                 this.speedX = 2;
                             }
 
-                            if ((this.x + 0.75 * this.radius >= obj.x && this.x <= obj.x + 0.1 * obj.width)
-                                || (this.x >= obj.x + 0.9 * obj.width && this.x - 0.75 * this.radius <= obj.x + obj.width)) {
+                            if ((this.x + 0.8 * this.radius >= obj.x && this.x <= obj.x + 0.1 * obj.width)
+                                || (this.x >= obj.x + 0.9 * obj.width && this.x - 0.8 * this.radius <= obj.x + obj.width)) {
                                 this.speedX = this.speedX * 3;
                                 this.speedY = this.speedY * (-1);
                             }
@@ -463,83 +462,33 @@
                             this.speedX = this.speedX * (-1);
                         }
                     }
-                }                
+                }
             }
             this.checkCollisionTile = function (obj) {
                 if (this.speedY < 0) {
                     if (this.y - this.radius < obj.y + obj.height) {
-                        if ((this.x + 0.75 * this.radius < obj.x && this.x + this.radius >= obj.x)
-                            || (this.x - 0.75 * this.radius > obj.x + obj.width && this.x - this.radius <= obj.x + obj.width)) {
+                        if ((this.x + 0.8 * this.radius < obj.x && this.x + this.radius >= obj.x)
+                            || (this.x - 0.8 * this.radius > obj.x + obj.width && this.x - this.radius <= obj.x + obj.width)) {
                             this.speedX = this.speedX * (-1);
                             return true;
                         }
                         else if (this.y > obj.y + obj.height) {
-                            if (this.speedX < 0) {
-                                this.speedX = -2;
-                            }
-                            else if (this.speedX > 0) {
-                                this.speedX = 2;
-                            }
-
-                            if ((this.x + 0.75 * this.radius >= obj.x && this.x <= obj.x + 0.1 * obj.width)
-                                || (this.x >= obj.x + 0.9 * obj.width && this.x - 0.75 * this.radius <= obj.x + obj.width)) {
-                                this.speedX = this.speedX * 3
-                                this.speedY = this.speedY * (-1);
-                                return true;
-                            }
-                            else if ((this.x <= obj.x + 0.3 * obj.width && this.x > obj.x + 0.1 * obj.width)
-                                || (this.x >= obj.x + 0.7 * obj.width && this.x < obj.x + 0.9 * obj.width)) {
-                                this.speedX = this.speedX * 2
-                                this.speedY = this.speedY * (-1);
-                                return true;
-                            }
-                            else if ((this.x <= obj.x + 0.4 * obj.width && this.x > obj.x + 0.3 * obj.width)
-                                || (this.x >= obj.x + 0.6 * obj.width && this.x < obj.x + 0.7 * obj.width)) {
-                                this.speedX = this.speedX * 1.5
-                                this.speedY = this.speedY * (-1);
-                                return true;
-                            }
-                            else if (this.x > obj.x + 0.4 * obj.width && this.x < obj.x + 0.6 * obj.width) {
+                            if ((this.x + 0.8 * this.radius >= obj.x) && (this.x - 0.8 * this.radius <= obj.x + obj.width)) {
                                 this.speedY = this.speedY * (-1);
                                 return true;
                             }
                         }
                     }
-                }
-                else if (this.speedY > 0) {
-                    if (this.y + this.radius > obj.y + obj.height && this.y < obj.y) {
-                        if ((this.x + 0.75 * this.radius < obj.x && this.x + this.radius >= obj.x)
-                            || (this.x - 0.75 * this.radius > obj.x + obj.width && this.x - this.radius <= obj.x + obj.width)) {
-                            this.speedX = this.speedX * (-1);
-                            return true;
+                    else if (this.speedY > 0) {
+                        if (this.y + this.radius > obj.y + obj.height && this.y < obj.y) {
+                            if ((this.x + 0.8 * this.radius < obj.x && this.x + this.radius >= obj.x)
+                                || (this.x - 0.8 * this.radius > obj.x + obj.width && this.x - this.radius <= obj.x + obj.width)) {
+                                this.speedX = this.speedX * (-1);
+                                return true;
+                            }
                         }
                         else if (this.y > obj.y) {
-                            if (this.speedX < 0) {
-                                this.speedX = -2;
-                            }
-                            else if (this.speedX > 0) {
-                                this.speedX = 2
-                            }
-
-                            if ((this.x + 0.75 * this.radius >= obj.x && this.x <= obj.x + 0.1 * obj.width)
-                                || (this.x >= obj.x + 0.9 * obj.width && this.x - 0.75 * this.radius <= obj.x + obj.width)) {
-                                this.speedX = this.speedX * 3
-                                this.speedY = this.speedY * (-1);
-                                return true;
-                            }
-                            else if ((this.x <= obj.x + 0.3 * obj.width && this.x > obj.x + 0.1 * obj.width)
-                                || (this.x >= obj.x + 0.7 * obj.width && this.x < obj.x + 0.9 * obj.width)) {
-                                this.speedX = this.speedX * 2
-                                this.speedY = this.speedY * (-1);
-                                return true;
-                            }
-                            else if ((this.x <= obj.x + 0.4 * obj.width && this.x > obj.x + 0.3 * obj.width)
-                                || (this.x >= obj.x + 0.6 * obj.width && this.x < obj.x + 0.7 * obj.width)) {
-                                this.speedX = this.speedX * 1.5
-                                this.speedY = this.speedY * (-1);
-                                return true;
-                            }
-                            else if (this.x > obj.x + 0.4 * obj.width && this.x < obj.x + 0.6 * obj.width) {
+                            if ((this.x + 0.8 * this.radius >= obj.x) && (this.x - 0.8 * this.radius <= obj.x + obj.width)) {
                                 this.speedY = this.speedY * (-1);
                                 return true;
                             }
@@ -616,7 +565,7 @@
                 horizontalPlatform.speedX = 0;
                 if (verticalPlatform) {
                     verticalPlatform.speedY = 0;
-                } 
+                }
             }
             if (verticalPlatform) {
                 horizontalPlatform.newPosVer(verticalPlatform);
@@ -672,6 +621,10 @@
             startGame();
         }
 
+        function showStats() {
+            getScores(db);
+        }
+
     </script>
     <div style="text-align:center;width:auto;" id="upButton">
         <button style="width: 100px" onmousedown="moveup()" onmouseup="clearmove()" ontouchstart="moveup()">UP</button>
@@ -687,7 +640,9 @@
         <button style="width: 100px" onclick="pause()">PAUSE</button>
         <button style="width: 100px" onclick="start()">START</button><br><br>
     </div><br><br>
-    <div id="Scores"></div>
+    <div style="text-align:center;width:auto;" id="showStats">
+        <button style="width: 100px" onclick="showStats()">STATS</button>
+    </div>
 
 </body>
 </html>
