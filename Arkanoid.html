@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
         canvas {
             border: 1px solid #d3d3d3;
@@ -13,30 +13,18 @@
             display: block;
         }
     </style>
+</head>
+<body onload="startGame()">
     <div style="font-size: large; text-align:right; width:63%">
         SCORE:
     </div>
     <div style="font-size: large; text-align:right; width:63%" id="display">
         Display score here
     </div>
-</head>
-<body onload="startGame()">
+    <script src="Objects.js"></script>
+    <script src="Controls.js"></script>
+    <script src="Stats.js"></script>
     <script>
-
-        window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB ||
-            window.msIndexedDB;
-
-        window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction ||
-            window.msIDBTransaction;
-        window.IDBKeyRange = window.IDBKeyRange ||
-            window.webkitIDBKeyRange || window.msIDBKeyRange
-
-        if (!window.indexedDB) {
-            window.alert("Your browser doesn't support a stable version of IndexedDB.")
-        }
-
-        let db;
-        let dbReq = indexedDB.open('gameStatsDB', 1);
 
         var player;
         var time;
@@ -49,94 +37,7 @@
         var tempBallSpeedX;
         var tempBallSpeedY;
         var score = 0;
-
-        dbReq.onupgradeneeded = function (event) {
-            db = event.target.result;
-            let gameStats = db.createObjectStore('gameStats', { autoIncrement: true });
-        }
-
-        dbReq.onsuccess = function (event) {
-            db = event.target.result;
-        }
-
-        dbReq.onerror = function (event) {
-            alert('Database error:' + event.target.errorCode);
-        }
-
-        function displayStats(stats) {
-            let listHTML = '';
-            if (stats.length == 0) {
-                listHTML = "List is empty";
-            }
-            else {
-                for (let i = 0; i < stats.length; i++) {
-                    let stat = stats[i];
-                    listHTML += ' Nickname: ' + stat.nick + ', '
-                                + ' Date: ' + stat.date + ', '
-                                + ' Points: ' + stat.points + ', '
-                                + ' Time: ' + stat.gameTime + ', '
-                                + ' Vertical Platform: ' + stat.platform + '\n';
-                }
-            }
-            window.alert(listHTML);
-        }
-
-        function getScores(db) {
-            let tx = db.transaction(['gameStats'], 'readonly');
-            let store = tx.objectStore('gameStats');
-
-            let req = store.openCursor();
-            let allStats = [];
-
-            req.onsuccess = function (event) {
-                let cursor = event.target.result;
-                if (cursor != null) {
-                    allStats.push(cursor.value);
-                    cursor.continue();
-                }
-                else {
-                    displayStats(allStats);
-                }
-            }
-
-            req.onerror = function (event) {
-                alert('Error when accessing database: ' + event.target.errorCode);
-            }
-        }
-
-        function addScore(db) {
-            let tx = db.transaction(['gameStats'], 'readwrite');
-            let store = tx.objectStore('gameStats');
-            let date = new Date;
-            let month = date.getMonth() + 1;
-            let isPlatform;
-            if (verticalPlatform) {
-                isPlatform = "Yes";
-            }
-            else {
-                isPlatform = "No";
-            }
-            let gameData = {
-                nick: player,
-                date: date.getDate() + "-" + month + "-" + date.getFullYear(),
-                points: score,
-                gameTime: time + "s",
-                platform: isPlatform
-            }
-            store.add(gameData)
-            tx.oncomplete = function () {
-                console.log('score stored');
-            }
-            tx.onerror = function (event) {
-                alert("Error with saving to database: " + event.target.errorCode);
-            }
-        }
-
-        function timer() {
-            if (!gamePaused) {
-                time++;
-            }
-        }
+        let ctx;
 
         function startGame() {
             player = prompt("Please enter your nickname.", "Nickname");
@@ -145,7 +46,7 @@
             }
 
             if (confirm('Do you want second, vertical platform?')) {
-                verticalPlatform = new platformVertical(20, 100, "green", 0, 300);
+                verticalPlatform = new platformVertical(20, 100, 0, 300);
                 document.getElementById('upButton').style.display = 'block';
                 document.getElementById('downButton').style.display = 'block';
             }
@@ -156,7 +57,7 @@
 
             window.alert("Press 'Start' when you are ready.");
             time = 0;
-            horizontalPlatform = new platformHorizontal(100, 20, "green", 200, 480);
+            horizontalPlatform = new platformHorizontal(100, 20, 200, 480);
             myBall = new ball();
             tilesArray = new Array(30);
             let counter = 0;
@@ -194,359 +95,6 @@
             }
         }
 
-        function platformHorizontal(width, height, color, x, y) {
-            this.width = width;
-            this.height = height;
-            this.speedX = 0;
-            this.x = x;
-            this.y = y;
-            this.update = function () {
-                ctx = myGameArea.context;
-                ctx.fillStyle = color;
-                ctx.fillRect(this.x, this.y, this.width, this.height);
-            }
-            this.newPosVer = function (obj) {
-                if (this.speedX < 0) {
-                    if (this.x > 0 && (this.x > obj.x + obj.width || this.y > obj.y + obj.height)) {
-                        this.x += this.speedX;
-                    }
-                }
-                else if (this.speedX > 0) {
-                    if ((this.x + this.width) < myGameArea.canvas.width) {
-                        this.x += this.speedX;
-                    }
-                }
-            }
-            this.newPos = function () {
-                if (this.speedX < 0) {
-                    if (this.x > 0) {
-                        this.x += this.speedX;
-                    }
-                }
-                else if (this.speedX > 0) {
-                    if ((this.x + this.width) < myGameArea.canvas.width) {
-                        this.x += this.speedX;
-                    }
-                }
-            }
-        }
-
-        function platformVertical(width, height, color, x, y) {
-            this.width = width;
-            this.height = height;
-            this.speedY = 0;
-            this.x = x;
-            this.y = y;
-            this.update = function () {
-                ctx = myGameArea.context;
-                ctx.fillStyle = color;
-                ctx.fillRect(this.x, this.y, this.width, this.height);
-            }
-            this.newPos = function (obj) {
-                if (this.speedY < 0) {
-                    if (this.y > 100) {
-                        this.y += this.speedY;
-                    }
-                }
-                else if (this.speedY > 0) {
-                    if (this.y + this.height < myGameArea.canvas.height && (this.y + this.height < obj.y || this.x + this.width < obj.x)) {
-                        this.y += this.speedY;
-                    }
-                }
-            }
-        }
-
-        function tile(x, y) {
-            this.width = 49;
-            this.height = 9;
-            this.newPos = function () {
-                this.x = x;
-                this.y = y;
-            }
-            this.update = function () {
-                ctx = myGameArea.context;
-                ctx.fillStyle = "red";
-                ctx.fillRect(this.x, this.y, this.width, this.height);
-            }
-        }
-
-        function ball(x, y) {
-            this.radius = 5;
-            var selector = Math.floor(Math.random() * 2);
-            if (selector == 0) {
-                this.speedX = -2;
-            }
-            else {
-                this.speedX = 2;
-            }
-            this.speedY = 2;
-            this.x = Math.floor(Math.random() * (400 - 100 + 1) + 100);
-            this.y = Math.floor(Math.random() * (150 - 100 + 1) + 100);;
-            this.update = function () {
-                ctx = myGameArea.context;
-                ctx.fillStyle = "blue";
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-                ctx.closePath();
-                ctx.fill();
-            }
-            this.newPos = function () {
-                if (this.speedX < 0) {
-                    if (this.speedY < 0) {
-                        this.speedY = -2;
-                    }
-                    else if (this.speedY > 0) {
-                        this.speedY = 2
-                    }
-
-                    if (this.x - this.radius <= 0) {
-                        if ((this.y <= 0.1 * myGameArea.canvas.height && this.y > 0)
-                            || (this.y >= 0.9 * myGameArea.canvas.height && this.y < myGameArea.canvas.height)) {
-                            this.speedY = this.speedY * 3;
-                            this.speedX = this.speedX * (-1);
-                        }
-                        else if ((this.y <= 0.3 * myGameArea.canvas.height && this.y > 0.1 * myGameArea.canvas.height)
-                            || (this.y >= 0.7 * myGameArea.canvas.height && this.y < 0.9 * myGameArea.canvas.height)) {
-                            this.speedY = this.speedY * 2;
-                            this.speedX = this.speedX * (-1);
-                        }
-                        else if ((this.y <= 0.4 * myGameArea.canvas.height && this.y > 0.3 * myGameArea.canvas.height)
-                            || (this.y >= 0.6 * myGameArea.canvas.height && this.y < 0.7 * myGameArea.canvas.height)) {
-                            this.speedY = this.speedY * 1.5;
-                            this.speedX = this.speedX * (-1);
-                        }
-                        else if (this.y > 0.4 * myGameArea.canvas.height && this.y < 0.6 * myGameArea.canvas.height) {
-                            this.speedX = this.speedX * (-1);
-                        }
-                    }
-                }
-                else if (this.speedX > 0) {
-                    if (this.speedY < 0) {
-                        this.speedY = -2;
-                    }
-                    else if (this.speedY > 0) {
-                        this.speedY = 2
-                    }
-
-                    if (this.x + this.radius >= myGameArea.canvas.width) {
-                        if ((this.y <= 0.1 * myGameArea.canvas.height && this.y > 0)
-                            || (this.y >= 0.9 * myGameArea.canvas.height && this.y < myGameArea.canvas.height)) {
-                            this.speedY = this.speedY * 3;
-                            this.speedX = this.speedX * (-1);
-                        }
-                        else if ((this.y <= 0.3 * myGameArea.canvas.height && this.y > 0.1 * myGameArea.canvas.height)
-                            || (this.y >= 0.7 * myGameArea.canvas.height && this.y < 0.9 * myGameArea.canvas.height)) {
-                            this.speedY = this.speedY * 2;
-                            this.speedX = this.speedX * (-1);
-                        }
-                        else if ((this.y <= 0.4 * myGameArea.canvas.height && this.y > 0.3 * myGameArea.canvas.height)
-                            || (this.y >= 0.6 * myGameArea.canvas.height && this.y < 0.7 * myGameArea.canvas.height)) {
-                            this.speedY = this.speedY * 1.5;
-                            this.speedX = this.speedX * (-1);
-                        }
-                        else if (this.y > 0.4 * myGameArea.canvas.height && this.y < 0.6 * myGameArea.canvas.height) {
-                            this.speedX = this.speedX * (-1);
-                        }
-                    }
-                }
-                if (this.speedY < 0) {
-                    if (this.y - this.radius <= 0) {
-                        if (this.speedX < 0) {
-                            this.speedX = -2;
-                        }
-                        else if (this.speedX > 0) {
-                            this.speedX = 2
-                        }
-
-                        if ((this.x <= 0.1 * myGameArea.canvas.width && this.x > 0)
-                            || (this.x >= 0.9 * myGameArea.canvas.width && this.x < myGameArea.canvas.width)) {
-                            this.speedX = this.speedX * 3;
-                            this.speedY = this.speedY * (-1);
-                        }
-                        else if ((this.x <= 0.3 * myGameArea.canvas.width && this.x > 0.1 * myGameArea.canvas.width)
-                            || (this.x >= 0.7 * myGameArea.canvas.width && this.y < 0.9 * myGameArea.canvas.width)) {
-                            this.speedX = this.speedX * 2;
-                            this.speedY = this.speedY * (-1);
-                        }
-                        else if ((this.x <= 0.4 * myGameArea.canvas.width && this.x > 0.3 * myGameArea.canvas.width)
-                            || (this.x >= 0.6 * myGameArea.canvas.width && this.x < 0.7 * myGameArea.canvas.width)) {
-                            this.speedX = this.speedX * 1.5;
-                            this.speedY = this.speedX * (-1);
-                        }
-                        else if (this.x > 0.4 * myGameArea.canvas.width && this.x < 0.6 * myGameArea.canvas.width) {
-                            this.speedY = this.speedY * (-1);
-                        }
-                    }
-                }
-                else if (this.speedY > 0) {
-                    if (this.y + this.radius > myGameArea.canvas.height) {
-                        gameOver();
-                    }
-                }
-                this.x += this.speedX;
-                this.y += this.speedY;
-            }
-            this.checkHorizontalPlatform = function (obj) {
-                if (this.speedY > 0) {
-                    if (this.y + this.radius > obj.y) {
-                        if ((this.x + 0.8 * this.radius < obj.x && this.x + this.radius >= obj.x)
-                            || (this.x - 0.8 * this.radius > obj.x + obj.width && this.x - this.radius <= obj.x + obj.width)) {
-                            this.speedX = this.speedX * (-1);
-                        }
-                        else if (this.y < obj.y) {
-                            if (this.speedX < 0) {
-                                this.speedX = -2;
-                            }
-                            else if (this.speedX > 0) {
-                                this.speedX = 2;
-                            }
-
-                            if ((this.x + 0.8 * this.radius >= obj.x && this.x <= obj.x + 0.1 * obj.width)
-                                || (this.x >= obj.x + 0.9 * obj.width && this.x - 0.8 * this.radius <= obj.x + obj.width)) {
-                                this.speedX = this.speedX * 3;
-                                this.speedY = this.speedY * (-1);
-                            }
-                            else if ((this.x <= obj.x + 0.3 * obj.width && this.x > obj.x + 0.1 * obj.width)
-                                || (this.x >= obj.x + 0.7 * obj.width && this.x < obj.x + 0.9 * obj.width)) {
-                                this.speedX = this.speedX * 2;
-                                this.speedY = this.speedY * (-1);
-                            }
-                            else if ((this.x <= obj.x + 0.4 * obj.width && this.x > obj.x + 0.3 * obj.width)
-                                || (this.x >= obj.x + 0.6 * obj.width && this.x < obj.x + 0.7 * obj.width)) {
-                                this.speedX = this.speedX * 1.5;
-                                this.speedY = this.speedY * (-1);
-                            }
-                            else if (this.x > obj.x + 0.4 * obj.width && this.x < obj.x + 0.6 * obj.width) {
-                                this.speedY = this.speedY * (-1);
-                            }
-                        }
-                    }
-                }
-            }
-            this.checkVerticalPlatform = function (obj) {
-                if (this.speedY > 0) {
-                    if (this.x < obj.x + obj.width && this.y + this.radius > obj.y && this.y < obj.y) {
-                        this.speedY = this.speedY * (-1);
-                    }
-                }
-                else if (this.speedY < 0) {
-                    if (this.x < obj.x + obj.width && this.y - this.radius < obj.y + obj.height && this.y > obj.y + obj.height) {
-                        this.speedY = this.speedY * (-1);
-                    }
-                }
-                if (this.speedX < 0) {
-                    if (this.speedY < 0) {
-                        this.speedY = -2;
-                    }
-                    else if (this.speedY > 0) {
-                        this.speedY = 2;
-                    }
-
-                    if (this.x - this.radius <= obj.x + obj.width) {
-                        if ((this.y <= obj.y + 0.1 * obj.height && this.y > obj.y)
-                            || (this.y >= obj.y + 0.9 * obj.height && this.y < obj.y + obj.height)) {
-                            this.speedY = this.speedY * 3;
-                            this.speedX = this.speedX * (-1);
-                        }
-                        else if ((this.y <= obj.y + 0.3 * obj.height && this.y > obj.y + 0.1 * obj.height)
-                            || (this.y >= obj.y + 0.7 * obj.height && this.y < obj.y + 0.9 * obj.height)) {
-                            this.speedY = this.speedY * 2;
-                            this.speedX = this.speedX * (-1);
-                        }
-                        else if ((this.y <= obj.y + 0.4 * obj.height && this.y > obj.y + 0.3 * obj.height)
-                            || (this.y >= obj.y + 0.6 * obj.height && this.y < obj.y + 0.7 * obj.height)) {
-                            this.speedY = this.speedY * 1.5;
-                            this.speedX = this.speedX * (-1);
-                        }
-                        else if (this.y > obj.y + 0.4 * obj.height && this.y < obj.y + 0.6 * obj.height) {
-                            this.speedX = this.speedX * (-1);
-                        }
-                    }
-                }
-            }
-            this.checkCollisionTile = function (obj) {
-                if (this.speedY < 0) {
-                    if (this.y - this.radius < obj.y + obj.height) {
-                        if ((this.x + 0.8 * this.radius < obj.x && this.x + this.radius >= obj.x)
-                            || (this.x - 0.8 * this.radius > obj.x + obj.width && this.x - this.radius <= obj.x + obj.width)) {
-                            this.speedX = this.speedX * (-1);
-                            return true;
-                        }
-                        else if (this.y > obj.y + obj.height) {
-                            if ((this.x + 0.8 * this.radius >= obj.x) && (this.x - 0.8 * this.radius <= obj.x + obj.width)) {
-                                this.speedY = this.speedY * (-1);
-                                return true;
-                            }
-                        }
-                    }
-                    else if (this.speedY > 0) {
-                        if (this.y + this.radius > obj.y + obj.height && this.y < obj.y) {
-                            if ((this.x + 0.8 * this.radius < obj.x && this.x + this.radius >= obj.x)
-                                || (this.x - 0.8 * this.radius > obj.x + obj.width && this.x - this.radius <= obj.x + obj.width)) {
-                                this.speedX = this.speedX * (-1);
-                                return true;
-                            }
-                        }
-                        else if (this.y > obj.y) {
-                            if ((this.x + 0.8 * this.radius >= obj.x) && (this.x - 0.8 * this.radius <= obj.x + obj.width)) {
-                                this.speedY = this.speedY * (-1);
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        function moveleft() {
-            horizontalPlatform.speedX = -3;
-        }
-
-        function moveright() {
-            horizontalPlatform.speedX = 3;
-        }
-
-        function moveup() {
-            if (verticalPlatform) {
-                verticalPlatform.speedY = -3;
-            }
-        }
-
-        function movedown() {
-            if (verticalPlatform) {
-                verticalPlatform.speedY = 3;
-            }
-        }
-
-        function clearmove() {
-            if (verticalPlatform) {
-                verticalPlatform.speedY = 0;
-            }
-            horizontalPlatform.speedX = 0;
-        }
-
-        function pause() {
-            if (!gamePaused) {
-                ballTempSpeedX = myBall.speedX;
-                ballTempSpeedY = myBall.speedY;
-                myBall.speedX = 0;
-                myBall.speedY = 0;
-                gamePaused = true;
-            }
-        }
-
-        function start() {
-            if (gamePaused) {
-                myBall.speedX = ballTempSpeedX;
-                myBall.speedY = ballTempSpeedY;
-                gamePaused = false;
-            }
-        }
-
-        function displayScore() {
-            document.getElementById('display').innerHTML = score;
-        }
-
         function updateGameArea() {
             myGameArea.clear();
             if (myGameArea.key) {
@@ -582,7 +130,6 @@
             }
             var checkCollision;
             for (let i = 0; i < tilesArray.length; i++) {
-                tilesArray[i].newPos();
                 tilesArray[i].update();
                 checkCollision = myBall.checkCollisionTile(tilesArray[i]);
                 if (checkCollision == true) {
@@ -599,30 +146,12 @@
             }
         }
 
-        function gameOver() {
-            clearmove();
-            window.alert("You lost");
-            addScore(db);
-            clearInterval(myGameArea.interval);
-            score = 0;
-            verticalPlatform = null;
-            player = null;
-            startGame();
+        function openForm() {
+            document.getElementById("myForm").style.display = "block";
         }
 
-        function gameWin() {
-            clearmove();
-            window.alert("You won!");
-            addScore(db);
-            clearInterval(myGameArea.interval);
-            score = 0;
-            verticalPlatform = null;
-            player = null;
-            startGame();
-        }
-
-        function showStats() {
-            getScores(db);
+        function closeForm() {
+            document.getElementById("myForm").style.display = "none";
         }
 
     </script>
@@ -643,6 +172,5 @@
     <div style="text-align:center;width:auto;" id="showStats">
         <button style="width: 100px" onclick="showStats()">STATS</button>
     </div>
-
 </body>
 </html>
