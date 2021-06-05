@@ -30,25 +30,36 @@
         var time;
         var horizontalPlatform;
         var verticalPlatform = null;
-        var myBall;
+        var myBallArray = [];
         var keyPressed = false;
         var gamePaused = false;
         var tilesArray
-        var tempBallSpeedX;
-        var tempBallSpeedY;
+        var tempBallSpeedX = [];
+        var tempBallSpeedY = [];
         var score = 0;
         let ctx;
+        var countB = 0;
+        var background = new Image();
+        var mode = false;
+        var block;
+        var lowest = 100;
 
         function startGame() {
+            background.src = "background.jpg";
+            document.getElementById('buttons').style.display = 'none';
             player = prompt("Please enter your nickname.", "Nickname");
             if (player == null) {
                 player = "User";
             }
 
+            if (confirm("Do you want additional layers of tiles showing up or should tiles just fill the gaps?")) {
+                mode = true;
+            }
+
             if (confirm('Do you want second, vertical platform?')) {
                 verticalPlatform = new platformVertical(20, 100, 0, 300);
-                document.getElementById('upButton').style.display = 'block';
-                document.getElementById('downButton').style.display = 'block';
+                document.getElementById('upButton').style.display = 'none';
+                document.getElementById('downButton').style.display = 'none';
             }
             else {
                 document.getElementById('upButton').style.display = 'none';
@@ -58,11 +69,11 @@
             window.alert("Press 'Start' when you are ready.");
             time = 0;
             horizontalPlatform = new platformHorizontal(100, 20, 200, 480);
-            myBall = new ball();
+            myBallArray.push(new ball());
             tilesArray = new Array(30);
             let counter = 0;
-            for (let i = 1; i < 22; i = i + 10) {
-                for (let j = 0; j < 451; j = j + 50) {
+            for (let i = 1; i < 40; i = i + 17) {
+                for (let j = 2; j < 453; j = j + 50) {
                     tilesArray[counter] = new tile(j, i);
                     counter++;
                 }
@@ -91,7 +102,87 @@
             },
             clear: function () {
                 this.context.fillStyle = 'rgba(240, 240, 240, 0.5)';
-                this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.context.drawImage(background, 0, 0);
+            }
+        }
+
+        function modeOne() {
+            if (tilesArray.length < 5) {
+                let counter = 0;
+                let tilesToGenerate = Math.floor(Math.random() * (20 - 1 + 1) + 1);
+                while (tilesToGenerate > 0) {
+                    for (let i = 1; i < 40; i = i + 17) {
+                        for (let j = 2; j < 453; j = j + 50) {
+                            if (tilesArray[counter] == null) {
+                                let random = Math.floor(Math.random() * (100 - 1 + 1) + 1);
+                                if (random < 20) {
+                                    tilesArray[counter] = new tile(j, i);
+                                    tilesToGenerate--;
+                                    if (tilesArray.length >= 25) {
+                                        return;
+                                    }
+                                }
+                            }
+                            counter++;
+                        }
+                    }
+                }
+            }
+            else if (tilesArray.length < 25 && tilesArray.length >= 5) {
+                let counter = 0;
+                for (let i = 1; i < 40; i = i + 17) {
+                    for (let j = 2; j < 453; j = j + 50) {
+                        if (tilesArray[counter] == null) {
+                            let random = Math.floor(Math.random() * (100 - 1 + 1) + 1);
+                            if (random < 10) {
+                                tilesArray[counter] = new tile(j, i);
+                                if (tilesArray.length >= 25) {
+                                    return;
+                                }
+                            }
+                        }
+                        counter++;
+                    }
+                }
+                
+            }
+        }
+
+        function modeTwo() {
+            for (let i = 0; i < tilesArray.length; i++) {
+                tilesArray[i].y += 17;
+            }
+            let j = 2;
+            for (let i = 0; i < 10; i++) {
+                tilesArray.push(new tile(j, 1));
+                j += 50;
+            }
+            let lowest = 0;
+            if (verticalPlatform) {
+                for (let i = 0; i < tilesArray.length; i++) {
+                    if (tilesArray[i].tileCollision(verticalPlatform)) {
+                        verticalPlatform.x = tilesArray[i].x + tilesArray[i].height + 3;
+                        if (verticalPlatform.x + verticalPlatform.height > myGameArea.clear.height) {
+                            gameOver();
+                        }
+                    }
+                    if (tilesArray[i].tileCollision(horizontalPlatform)) {
+                        gameOver();
+                    }
+                    if (tilesArray[i].x + tilesArray[i].height > lowest) {
+                        lowest = tilesArray[i].x + tilesArray[i].height + 60;
+                    }
+                }
+            }
+            else {
+                for (let i = 0; i < tilesArray.length; i++) {
+                    if (tilesArray[i].tileCollision(horizontalPlatform)) {
+                        gameOver();
+                    }
+                    if (tilesArray[i].x + tilesArray[i].height > lowest) {
+                        lowest = tilesArray[i].x + tilesArray[i].height + 60;
+                    }
+                }
             }
         }
 
@@ -120,29 +211,64 @@
                 horizontalPlatform.update();
                 verticalPlatform.newPos(horizontalPlatform);
                 verticalPlatform.update();
-                myBall.checkHorizontalPlatform(horizontalPlatform);
-                myBall.checkVerticalPlatform(verticalPlatform);
+                for (let i = 0; i < myBallArray.length; i++) {
+                    myBallArray[i].checkHorizontalPlatform(horizontalPlatform);
+                    myBallArray[i].checkVerticalPlatform(verticalPlatform);
+                }
             }
             else {
                 horizontalPlatform.newPos();
                 horizontalPlatform.update();
-                myBall.checkHorizontalPlatform(horizontalPlatform);
+                for (let i = 0; i < myBallArray.length; i++) {
+                    myBallArray[i].checkHorizontalPlatform(horizontalPlatform);
+                }
             }
             var checkCollision;
             for (let i = 0; i < tilesArray.length; i++) {
                 tilesArray[i].update();
-                checkCollision = myBall.checkCollisionTile(tilesArray[i]);
-                if (checkCollision == true) {
-                    tilesArray.splice(i, 1)
-                    i--;
-                    score++;
+                for (let j = 0; j < myBallArray.length; j++) {
+                    checkCollision = myBallArray[j].checkCollisionTile(tilesArray[i]);
+                    if (checkCollision == true) {
+                        if (tilesArray[i].type == 'B') {
+                            countB++;
+                        }
+                        tilesArray.splice(i, 1)
+                        i--;
+                        score++;
+                    }
                 }
             }
-            myBall.newPos();
-            myBall.update();
+            if (countB >= 5) {
+                myBallArray.push(new ball());
+                countB = 0;
+            }
+            for (let i = 0; i < myBallArray.length; i++) {
+                myBallArray[i].newPos();
+                myBallArray[i].update();
+                myBallArray[i].checkBallCollision();
+                var toDelete = myBallArray[i].checkForDelete();
+                if (toDelete == true) {
+                    myBallArray.splice(i, 1)
+                    i--;
+                }
+            }
+            if (mode == false) {
+                if (time % 5 == 0 || tilesArray.length < 5) {
+                    modeOne();
+                }
+            }
+            else {
+                if (time % 30 == 0 && time != 0 && block == false) {
+                    modeTwo();
+                    block = true;
+                }
+                else if (time % 30 != 0) {
+                    block = false;
+                }
+            }
             displayScore();
-            if (score == 30) {
-                gameWin();
+            if (myBallArray.length <= 0) {
+                gameOver();
             }
         }
 
@@ -158,7 +284,7 @@
     <div style="text-align:center;width:auto;" id="upButton">
         <button style="width: 100px" onmousedown="moveup()" onmouseup="clearmove()" ontouchstart="moveup()">UP</button>
     </div>
-    <div style="text-align:center;width:auto;">
+    <div style="text-align:center;width:auto;" id="buttons">
         <button style="width: 100px" onmousedown="moveleft()" onmouseup="clearmove()" ontouchstart="moveleft()">LEFT</button>
         <button style="width: 100px" onmousedown="moveright()" onmouseup="clearmove()" ontouchstart="moveright()">RIGHT</button>
     </div>

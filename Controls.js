@@ -27,18 +27,22 @@ function clearmove() {
 
 function pause() {
     if (!gamePaused) {
-        ballTempSpeedX = myBall.speedX;
-        ballTempSpeedY = myBall.speedY;
-        myBall.speedX = 0;
-        myBall.speedY = 0;
+        for (let i = 0; i < myBallArray.length; i++) {
+            tempBallSpeedX.push(myBallArray[i].speedX);
+            tempBallSpeedY.push(myBallArray[i].speedY);
+            myBallArray[i].speedX = 0;
+            myBallArray[i].speedY = 0;
+        }
         gamePaused = true;
     }
 }
 
 function start() {
     if (gamePaused) {
-        myBall.speedX = ballTempSpeedX;
-        myBall.speedY = ballTempSpeedY;
+        for (let i = 0; i < myBallArray.length; i++) {
+            myBallArray[i].speedX = tempBallSpeedX.shift();
+            myBallArray[i].speedY = tempBallSpeedY.shift();
+        }
         gamePaused = false;
     }
 }

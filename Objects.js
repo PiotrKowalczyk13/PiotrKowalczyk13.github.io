@@ -1,16 +1,16 @@
 class platformHorizontal {
     constructor(width, height, x, y) {
+        this.speedX = 0;
         this.width = width;
         this.height = height;
-        this.speedX = 0;
         this.x = x;
         this.y = y;
-        this.color = "green";
+        this.image = new Image();
+        this.image.src = "hPlatform.png";
     }
     update() {
         ctx = myGameArea.context;
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
     }
     newPosVer(obj) {
         if (this.speedX < 0) {
@@ -45,12 +45,12 @@ class platformVertical {
         this.speedY = 0;
         this.x = x;
         this.y = y;
-        this.color = "green";
+        this.image = new Image();
+        this.image.scr = "vPlatform.png";
     } 
     update() {
         ctx = myGameArea.context;
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
     }
     newPos(obj) {
         if (this.speedY < 0) {
@@ -69,7 +69,7 @@ class platformVertical {
 class ball {
     constructor() {
         this.x = Math.floor(Math.random() * (400 - 100 + 1) + 100);
-        this.y = Math.floor(Math.random() * (150 - 100 + 1) + 100);
+        this.y = Math.floor(Math.random() * ((lowest + 50) - lowest + 1) + lowest);
         this.radius = 5;
         var selector = Math.floor(Math.random() * 2);
         if (selector == 0) {
@@ -79,14 +79,16 @@ class ball {
             this.speedX = 3;
         }
         this.speedY = 3;
+        this.image = new Image();
+        this.image.src = "ball.png";
     }
     update() {
         ctx = myGameArea.context;
-        ctx.fillStyle = "blue";
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
         ctx.closePath();
         ctx.fill();
+        ctx.drawImage(this.image, this.x - this.radius, this.y - this.radius);
     }
     newPos() {
         if (this.speedX < 0) {
@@ -102,11 +104,6 @@ class ball {
         if (this.speedY < 0) {
             if (this.y - this.radius <= 0) {
                 this.speedY = this.speedY * (-1);
-            }
-        }
-        else if (this.speedY > 0) {
-            if (this.y + this.radius > myGameArea.canvas.height) {
-                gameOver();
             }
         }
         this.x += this.speedX;
@@ -195,33 +192,73 @@ class ball {
 
     checkCollisionTile(obj) {
         if (this.speedY < 0) {
-            if (this.y - this.radius < obj.y + obj.height) {
-                if ((this.x + 0.8 * this.radius < obj.x && this.x + this.radius >= obj.x)
-                    || (this.x - 0.8 * this.radius > obj.x + obj.width && this.x - this.radius <= obj.x + obj.width)) {
-                    this.speedX = this.speedX * (-1);
+            if (this.y <= obj.y + obj.height && this.y >= obj.y) {
+                if (this.x + this.radius <= obj.x || this.x <= obj.x + obj.width) {
+                    this.speedX *= (-1);
                     return true;
                 }
-                else if (this.y > obj.y + obj.height) {
-                    if ((this.x + 0.8 * this.radius >= obj.x) && (this.x - 0.8 * this.radius <= obj.x + obj.width)) {
-                        this.speedY = this.speedY * (-1);
-                        return true;
-                    }
-                }
+            }
+            else if (this.y - this.radius <= obj.y + obj.height && this.x + this.radius >= obj.x && this.x - this.radius <= obj.x + obj.width) {
+                this.speedY *= (-1);
+                return true;
             }
             else if (this.speedY > 0) {
-                if (this.y + this.radius > obj.y + obj.height && this.y < obj.y) {
-                    if ((this.x + 0.8 * this.radius < obj.x && this.x + this.radius >= obj.x)
-                        || (this.x - 0.8 * this.radius > obj.x + obj.width && this.x - this.radius <= obj.x + obj.width)) {
-                        this.speedX = this.speedX * (-1);
+                if (this.y <= obj.y + obj.height && this.y >= obj.y) {
+                    if (this.x + this.radius <= obj.x || this.x <= obj.x + obj.width) {
+                        this.speedX *= (-1);
                         return true;
                     }
                 }
-                else if (this.y > obj.y) {
-                    if ((this.x + 0.8 * this.radius >= obj.x) && (this.x - 0.8 * this.radius <= obj.x + obj.width)) {
-                        this.speedY = this.speedY * (-1);
-                        return true;
-                    }
+                else if (this.y + this.radius >= obj.y && this.x + this.radius >= obj.x && this.x - this.radius <= obj.x + obj.width) {
+                    this.speedY *= (-1);
+                    return true;
                 }
+            }
+        }
+    }
+
+    angle() {
+        return Math.atan2(this.speedY, this.speedX);
+    }
+
+    speed() {
+        return Math.sqrt(this.speedX * this.speedX + this.speedY * this.speedY);
+    }
+
+    checkBallCollision() {
+        for (let i = 0; i < myBallArray.length; i++) {
+            if (myBallArray[i] != this) {
+                if (Math.sqrt((this.y - myBallArray[i].y) * (this.y - myBallArray[i].y) + (this.x - myBallArray[i].x) * (this.x - myBallArray[i].x)) <= this.radius + myBallArray[i].radius) {
+                    let theta1 = this.angle();
+                    let theta2 = myBallArray[i].angle();
+                    let p = Math.atan2(myBallArray[i].y - this.y, myBallArray[i].x - this.x);
+                    let mass1 = this.radius * this.radius * this.radius;
+                    let mass2 = myBallArray[i].radius * myBallArray[i].radius * myBallArray[i].radius;
+                    let velocity1 = this.speed();
+                    let velocity2 = myBallArray[i].speed();
+
+                    let speedX1New = (velocity1 * Math.cos(theta1 - p) * (mass1 - mass2) + 2 * mass2 * velocity2 * Math.cos(theta2 - p)) /
+                        (mass1 + mass2) * Math.cos(p) + velocity1 * Math.sin(theta1 - p) * Math.cos(p + Math.PI / 2);
+                    let speedY1New = (velocity1 * Math.cos(theta1 - p) * (mass1 - mass2) + 2 * mass2 * velocity2 * Math.cos(theta2 - p)) /
+                        (mass1 + mass2) * Math.sin(p) + velocity1 * Math.sin(theta1 - p) * Math.sin(p + Math.PI / 2);
+                    let speedX2New = (velocity2 * Math.cos(theta2 - p) * (mass2 - mass1) + 2 * mass1 * velocity1 * Math.cos(theta1 - p)) /
+                        (mass1 + mass2) * Math.cos(p) + velocity2 * Math.sin(theta2 - p) * Math.cos(p + Math.PI / 2);
+                    let speedY2New = (velocity2 * Math.cos(theta2 - p) * (mass2 - mass1) + 2 * mass1 * velocity1 * Math.cos(theta1 - p)) /
+                        (mass1 + mass2) * Math.sin(p) + velocity2 * Math.sin(theta2 - p) * Math.sin(p + Math.PI / 2);
+
+                    this.speedX = speedX1New;
+                    this.speedY = speedY1New;
+                    myBallArray[i].speedX = speedX2New;
+                    myBallArray[i].speedY = speedY2New;
+                }  
+            }
+        }  
+    }
+
+    checkForDelete() {
+        if (this.speedY > 0) {
+            if (this.y + this.radius > myGameArea.canvas.height) {
+                return true;
             }
         }
     }
@@ -231,12 +268,27 @@ class tile {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.width = 49;
-        this.height = 9;
+        this.width = 46;
+        this.height = 16;
+        this.image = new Image();
+        var selector = Math.floor(Math.random() * 2);
+        if (selector == 0) {
+            this.type = 'A';
+            this.image.src = "tileA.png"
+        }
+        else {
+            this.type = 'B';
+            this.image.src = "tileB.png"
+        }
     }
     update() {
         ctx = myGameArea.context;
-        ctx.fillStyle = "red";
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+    }
+
+    tileCollision(obj) {
+        if (this.y + this.height >= obj.y && (this.x >= obj.x + obj.width || this.x + this.width <= obj.x)) {
+            return true;
+        }
     }
 }
