@@ -1,20 +1,20 @@
 function moveleft() {
-    horizontalPlatform.speedX = -3;
+    horizontalPlatform.speedX = -5;
 }
 
 function moveright() {
-    horizontalPlatform.speedX = 3;
+    horizontalPlatform.speedX = 5;
 }
 
 function moveup() {
     if (verticalPlatform) {
-        verticalPlatform.speedY = -3;
+        verticalPlatform.speedY = -5;
     }
 }
 
 function movedown() {
     if (verticalPlatform) {
-        verticalPlatform.speedY = 3;
+        verticalPlatform.speedY = 5;
     }
 }
 
@@ -48,6 +48,7 @@ function start() {
 }
 
 function gameOver() {
+    keyPressed = false;
     clearmove();
     window.alert("You lost");
     addScore(db);
@@ -59,6 +60,7 @@ function gameOver() {
 }
 
 function gameWin() {
+    keyPressed = false;
     clearmove();
     window.alert("You won!");
     addScore(db);

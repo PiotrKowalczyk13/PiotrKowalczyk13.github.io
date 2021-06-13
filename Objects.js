@@ -70,7 +70,7 @@ class ball {
     constructor() {
         this.x = Math.floor(Math.random() * (400 - 100 + 1) + 100);
         this.y = Math.floor(Math.random() * ((lowest + 50) - lowest + 1) + lowest);
-        this.radius = 5;
+        this.radius = 8;
         var selector = Math.floor(Math.random() * 2);
         if (selector == 0) {
             this.speedX = -3;
@@ -112,12 +112,12 @@ class ball {
 
     checkHorizontalPlatform(obj) {
         if (this.speedY > 0) {
-            if (this.y + this.radius > obj.y) {
-                if ((this.x + 0.8 * this.radius < obj.x && this.x + this.radius >= obj.x)
-                    || (this.x - 0.8 * this.radius > obj.x + obj.width && this.x - this.radius <= obj.x + obj.width)) {
+            if (this.y >= obj.y) {
+                if (this.x + this.radius >= obj.x && this.x < obj.x ||
+                    this.x - this.radius <= obj.x + obj.width && this.x > obj.x + obj.width) {
                     this.speedX = this.speedX * (-1);
                 }
-                else if (this.y < obj.y) {
+                else if (this.y + this.radius >= obj.y) {
                     if (this.speedX < 0) {
                         this.speedX = -3;
                     }
@@ -125,8 +125,8 @@ class ball {
                         this.speedX = 3;
                     }
 
-                    if ((this.x + 0.8 * this.radius >= obj.x && this.x <= obj.x + 0.1 * obj.width)
-                        || (this.x >= obj.x + 0.9 * obj.width && this.x - 0.8 * this.radius <= obj.x + obj.width)) {
+                    if ((this.x >= obj.x && this.x <= obj.x + 0.1 * obj.width)
+                        || (this.x >= obj.x + 0.9 * obj.width && this.x <= obj.x + obj.width)) {
                         this.speedX = this.speedX * 3;
                         this.speedY = this.speedY * (-1);
                     }
@@ -193,26 +193,30 @@ class ball {
     checkCollisionTile(obj) {
         if (this.speedY < 0) {
             if (this.y <= obj.y + obj.height && this.y >= obj.y) {
-                if (this.x + this.radius <= obj.x || this.x <= obj.x + obj.width) {
+                if (this.x + this.radius >= obj.x && this.x < obj.x ||
+                    this.x - this.radius <= obj.x + obj.width && this.x > obj.x + obj.width) {
                     this.speedX *= (-1);
                     return true;
                 }
             }
-            else if (this.y - this.radius <= obj.y + obj.height && this.x + this.radius >= obj.x && this.x - this.radius <= obj.x + obj.width) {
+            else if (this.y - this.radius <= obj.y + obj.height && this.y > obj.y + obj.height
+                && this.x >= obj.x && this.x <= obj.x + obj.width) {
                 this.speedY *= (-1);
                 return true;
             }
-            else if (this.speedY > 0) {
-                if (this.y <= obj.y + obj.height && this.y >= obj.y) {
-                    if (this.x + this.radius <= obj.x || this.x <= obj.x + obj.width) {
-                        this.speedX *= (-1);
-                        return true;
-                    }
-                }
-                else if (this.y + this.radius >= obj.y && this.x + this.radius >= obj.x && this.x - this.radius <= obj.x + obj.width) {
-                    this.speedY *= (-1);
+        }
+        else if (this.speedY > 0) {
+            if (this.y <= obj.y + obj.height && this.y >= obj.y) {
+                if (this.x + this.radius >= obj.x && this.x < obj.x ||
+                    this.x - this.radius <= obj.x + obj.width && this.x > obj.x + obj.width)  {
+                    this.speedX *= (-1);
                     return true;
                 }
+            }
+            else if (this.y + this.radius >= obj.y && this.y < obj.y
+                && this.x >= obj.x && this.x <= obj.x + obj.width) {
+                this.speedY *= (-1);
+                return true;
             }
         }
     }
@@ -268,8 +272,8 @@ class tile {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.width = 46;
-        this.height = 16;
+        this.width = 50;
+        this.height = 20;
         this.image = new Image();
         var selector = Math.floor(Math.random() * 2);
         if (selector == 0) {

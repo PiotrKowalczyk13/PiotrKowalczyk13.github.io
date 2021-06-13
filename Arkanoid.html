@@ -15,15 +15,16 @@
     </style>
 </head>
 <body onload="startGame()">
-    <div style="font-size: large; text-align:right; width:63%">
+    <div style="font-size: large; text-align:right; width:66%">
         SCORE:
     </div>
-    <div style="font-size: large; text-align:right; width:63%" id="display">
+    <div style="font-size: large; text-align:right; width:66%" id="display">
         Display score here
     </div>
     <script src="Objects.js"></script>
     <script src="Controls.js"></script>
     <script src="Stats.js"></script>
+    <script src="Gamemodes.js"></script>
     <script>
 
         var player;
@@ -33,7 +34,7 @@
         var myBallArray = [];
         var keyPressed = false;
         var gamePaused = false;
-        var tilesArray
+        var tilesArray;
         var tempBallSpeedX = [];
         var tempBallSpeedY = [];
         var score = 0;
@@ -42,7 +43,7 @@
         var background = new Image();
         var mode = false;
         var block;
-        var lowest = 100;
+        var lowest = 150;
 
         function startGame() {
             background.src = "background.jpg";
@@ -57,7 +58,7 @@
             }
 
             if (confirm('Do you want second, vertical platform?')) {
-                verticalPlatform = new platformVertical(20, 100, 0, 300);
+                verticalPlatform = new platformVertical(23, 128, 0, 300);
                 document.getElementById('upButton').style.display = 'none';
                 document.getElementById('downButton').style.display = 'none';
             }
@@ -68,13 +69,13 @@
 
             window.alert("Press 'Start' when you are ready.");
             time = 0;
-            horizontalPlatform = new platformHorizontal(100, 20, 200, 480);
+            horizontalPlatform = new platformHorizontal(128, 23, 256, 457);
             myBallArray.push(new ball());
-            tilesArray = new Array(30);
+            tilesArray = new Array();
             let counter = 0;
-            for (let i = 1; i < 40; i = i + 17) {
-                for (let j = 2; j < 453; j = j + 50) {
-                    tilesArray[counter] = new tile(j, i);
+            for (let i = 50; i < 130; i = i + 21) {
+                for (let j = 65; j < 575; j = j + 51) {
+                    tilesArray.push(new tile(j, i));
                     counter++;
                 }
             }
@@ -86,8 +87,8 @@
         var myGameArea = {
             canvas: document.createElement("canvas"),
             start: function () {
-                this.canvas.width = 500;
-                this.canvas.height = 500;
+                this.canvas.width = 640;
+                this.canvas.height = 480;
                 this.context = this.canvas.getContext("2d");
                 document.body.insertBefore(this.canvas, document.body.childNodes[0]);
                 this.interval = setInterval(updateGameArea, 20);
@@ -101,88 +102,9 @@
                 })
             },
             clear: function () {
-                this.context.fillStyle = 'rgba(240, 240, 240, 0.5)';
+                this.context.globalAlpha = 0.4;
                 this.context.drawImage(background, 0, 0);
-            }
-        }
-
-        function modeOne() {
-            if (tilesArray.length < 5) {
-                let counter = 0;
-                let tilesToGenerate = Math.floor(Math.random() * (20 - 1 + 1) + 1);
-                while (tilesToGenerate > 0) {
-                    for (let i = 1; i < 40; i = i + 17) {
-                        for (let j = 2; j < 453; j = j + 50) {
-                            if (tilesArray[counter] == null) {
-                                let random = Math.floor(Math.random() * (100 - 1 + 1) + 1);
-                                if (random < 20) {
-                                    tilesArray[counter] = new tile(j, i);
-                                    tilesToGenerate--;
-                                    if (tilesArray.length >= 25) {
-                                        return;
-                                    }
-                                }
-                            }
-                            counter++;
-                        }
-                    }
-                }
-            }
-            else if (tilesArray.length < 25 && tilesArray.length >= 5) {
-                let counter = 0;
-                for (let i = 1; i < 40; i = i + 17) {
-                    for (let j = 2; j < 453; j = j + 50) {
-                        if (tilesArray[counter] == null) {
-                            let random = Math.floor(Math.random() * (100 - 1 + 1) + 1);
-                            if (random < 10) {
-                                tilesArray[counter] = new tile(j, i);
-                                if (tilesArray.length >= 25) {
-                                    return;
-                                }
-                            }
-                        }
-                        counter++;
-                    }
-                }
-                
-            }
-        }
-
-        function modeTwo() {
-            for (let i = 0; i < tilesArray.length; i++) {
-                tilesArray[i].y += 17;
-            }
-            let j = 2;
-            for (let i = 0; i < 10; i++) {
-                tilesArray.push(new tile(j, 1));
-                j += 50;
-            }
-            let lowest = 0;
-            if (verticalPlatform) {
-                for (let i = 0; i < tilesArray.length; i++) {
-                    if (tilesArray[i].tileCollision(verticalPlatform)) {
-                        verticalPlatform.x = tilesArray[i].x + tilesArray[i].height + 3;
-                        if (verticalPlatform.x + verticalPlatform.height > myGameArea.clear.height) {
-                            gameOver();
-                        }
-                    }
-                    if (tilesArray[i].tileCollision(horizontalPlatform)) {
-                        gameOver();
-                    }
-                    if (tilesArray[i].x + tilesArray[i].height > lowest) {
-                        lowest = tilesArray[i].x + tilesArray[i].height + 60;
-                    }
-                }
-            }
-            else {
-                for (let i = 0; i < tilesArray.length; i++) {
-                    if (tilesArray[i].tileCollision(horizontalPlatform)) {
-                        gameOver();
-                    }
-                    if (tilesArray[i].x + tilesArray[i].height > lowest) {
-                        lowest = tilesArray[i].x + tilesArray[i].height + 60;
-                    }
-                }
+                this.context.globalAlpha = 1;
             }
         }
 
@@ -232,7 +154,7 @@
                         if (tilesArray[i].type == 'B') {
                             countB++;
                         }
-                        tilesArray.splice(i, 1)
+                        tilesArray.splice(i, 1);
                         i--;
                         score++;
                     }
