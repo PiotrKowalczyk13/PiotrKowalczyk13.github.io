@@ -39,7 +39,7 @@ class platformHorizontal {
 }
 
 class platformVertical {
-    constructor(width, height, x, y){
+    constructor(width, height, x, y) {
         this.width = width;
         this.height = height;
         this.speedY = 0;
@@ -47,7 +47,7 @@ class platformVertical {
         this.y = y;
         this.image = new Image();
         this.image.scr = "vPlatform.png";
-    } 
+    }
     update() {
         ctx = myGameArea.context;
         ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
@@ -192,7 +192,7 @@ class ball {
 
     checkCollisionTile(obj) {
         if (this.speedY < 0) {
-            if (this.y <= obj.y + obj.height && this.y >= obj.y) {
+            if ((this.y <= obj.y + obj.height && this.y >= obj.y)) {
                 if (this.x + this.radius >= obj.x && this.x < obj.x ||
                     this.x - this.radius <= obj.x + obj.width && this.x > obj.x + obj.width) {
                     this.speedX *= (-1);
@@ -206,9 +206,9 @@ class ball {
             }
         }
         else if (this.speedY > 0) {
-            if (this.y <= obj.y + obj.height && this.y >= obj.y) {
+            if ((this.y <= obj.y + obj.height && this.y >= obj.y)) {
                 if (this.x + this.radius >= obj.x && this.x < obj.x ||
-                    this.x - this.radius <= obj.x + obj.width && this.x > obj.x + obj.width)  {
+                    this.x - this.radius <= obj.x + obj.width && this.x > obj.x + obj.width) {
                     this.speedX *= (-1);
                     return true;
                 }
@@ -254,9 +254,9 @@ class ball {
                     this.speedY = speedY1New;
                     myBallArray[i].speedX = speedX2New;
                     myBallArray[i].speedY = speedY2New;
-                }  
+                }
             }
-        }  
+        }
     }
 
     checkForDelete() {
@@ -293,6 +293,60 @@ class tile {
     tileCollision(obj) {
         if (this.y + this.height >= obj.y && (this.x >= obj.x + obj.width || this.x + this.width <= obj.x)) {
             return true;
+        }
+    }
+}
+
+class bonus {
+    constructor(bonusType, x, y) {
+        this.image = new Image();
+        if (bonusType == "x2" || bonusType == "x5") {
+            this.x = x + 6;
+            this.y = y + 15;
+            this.width = 38;
+            this.height = 20;
+            if (bonusType == "x2") {
+                this.image.src = "scoreX2.png";
+            }
+            else {
+                this.image.src = "scoreX5.png";
+            }
+        }
+        else if (bonusType == "sizePlus" || bonusType == "sizeMinus") {
+            this.x = x - 10;
+            this.y = y + 15;
+            this.width = 70;
+            this.height = 20;
+            if (bonusType == "sizePlus") {
+                this.image.src = "sizePlus.png";
+            }
+            else {
+                this.image.src = "sizeMinus.png";
+            }
+        }
+        else {
+            this.x = x + 11;
+            this.y = y + 15;
+            this.width = 28;
+            this.height = 20;
+            this.image.src = "directions.png";
+        }
+        this.type = bonusType;
+        this.speedY = 2;
+    }
+
+    update() {
+        this.y += this.speedY;
+        ctx = myGameArea.context;
+        ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+    }
+
+    isCaught(obj) {
+        if (this.y + this.height >= obj.y && (this.x + this.width >= obj.x && this.x <= obj.x + obj.width)) {
+            return true;
+        }
+        else if (this.y > obj.y + obj.height) {
+            return false;
         }
     }
 }

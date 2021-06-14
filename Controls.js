@@ -1,20 +1,40 @@
 function moveleft() {
-    horizontalPlatform.speedX = -5;
+    if (isDirectionsActive) {
+        horizontalPlatform.speedX = 5;
+    }
+    else {
+        horizontalPlatform.speedX = -5;
+    }   
 }
 
 function moveright() {
-    horizontalPlatform.speedX = 5;
+    if (isDirectionsActive) {
+        horizontalPlatform.speedX = -5;
+    }
+    else {
+        horizontalPlatform.speedX = 5;
+    }
 }
 
 function moveup() {
     if (verticalPlatform) {
-        verticalPlatform.speedY = -5;
+        if (isDirectionsActive) {
+            horizontalPlatform.speedY = -5;
+        }
+        else {
+            horizontalPlatform.speedY = 5;
+        }
     }
 }
 
 function movedown() {
     if (verticalPlatform) {
-        verticalPlatform.speedY = 5;
+        if (isDirectionsActive) {
+            horizontalPlatform.speedX = 5;
+        }
+        else {
+            horizontalPlatform.speedX = -5;
+        }
     }
 }
 
