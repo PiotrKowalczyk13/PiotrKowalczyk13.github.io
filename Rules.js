@@ -1,10 +1,11 @@
 function modeOne() {
+    var counter;
     if (tilesArray.length < 5) {
         let tilesToGenerate = Math.floor(Math.random() * (20 - 1 + 1) + 1);
         while (tilesToGenerate > 0) {
             for (let i = 50; i < 80; i = i + 21) {
                 for (let j = 65; j < 575; j = j + 51) {
-                    for (let counter = 0; counter < tilesArray.length; counter++){
+                    for (counter = 0; counter < tilesArray.length; counter++){
                         if (tilesArray[counter].x == j && tilesArray[counter].y == i) {
                             break;
                         }
@@ -26,7 +27,7 @@ function modeOne() {
     else if (tilesArray.length < 25 && tilesArray.length >= 5) {
         for (let i = 50; i < 80; i = i + 21) {
             for (let j = 65; j < 575; j = j + 51) {
-                for (let counter = 0; counter < tilesArray.length; counter++) {
+                for (counter = 0; counter < tilesArray.length; counter++) {
                     if (tilesArray[counter].x == j && tilesArray[counter].y == i) {
                         break;
                     }

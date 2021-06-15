@@ -113,11 +113,11 @@ class ball {
     checkHorizontalPlatform(obj) {
         if (this.speedY > 0) {
             if (this.y >= obj.y) {
-                if (this.x + this.radius >= obj.x && this.x < obj.x ||
-                    this.x - this.radius <= obj.x + obj.width && this.x > obj.x + obj.width) {
+                if (this.x + this.radius > obj.x && this.x < obj.x ||
+                    this.x - this.radius < obj.x + obj.width && this.x > obj.x + obj.width) {
                     this.speedX = this.speedX * (-1);
                 }
-                else if (this.y + this.radius >= obj.y) {
+                else if (this.y + this.radius >= obj.y && this.y < obj.y) {
                     if (this.speedX < 0) {
                         this.speedX = -3;
                     }
