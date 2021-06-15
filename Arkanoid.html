@@ -15,16 +15,11 @@
     </style>
 </head>
 <body onload="startGame()">
-    <div style="font-size: large; text-align:right; width:66%">
-        SCORE:
-    </div>
-    <div style="font-size: large; text-align:right; width:66%" id="display">
-        Display score here
-    </div>
     <script src="Objects.js"></script>
     <script src="Controls.js"></script>
     <script src="Stats.js"></script>
     <script src="Rules.js"></script>
+    <script src="Collisions.js"></script>
     <script>
 
         var player;
@@ -60,13 +55,10 @@
         var keyPressed = false;
         var gamePaused = false;
 
-        function startGame() { //TODO: better prompts, annoying input so far
+        function startGame() {
             background.src = "background.jpg";
             document.getElementById('buttons').style.display = 'none';
-            player = prompt("Please enter your nickname.", "Nickname");
-            if (player == null) {
-                player = "User";
-            }
+            player = "User";
 
             if (confirm("Do you want additional layers of tiles showing up or should tiles just fill the gaps?")) {
                 mode = true;
@@ -81,8 +73,6 @@
                 document.getElementById('upButton').style.display = 'none';
                 document.getElementById('downButton').style.display = 'none';
             }
-
-            window.alert("Press 'Start' when you are ready.");
             time = 0;
             horizontalPlatform = new platformHorizontal(128, 23, 256, 457);
             startingSize = horizontalPlatform.width;
@@ -95,7 +85,6 @@
                 }
             }
             myGameArea.start();
-            document.getElementById('display').innerHTML = score;
             pause();
         }
 
@@ -123,7 +112,7 @@
             }
         }
 
-        function updateGameArea() { //TODO: make functions to split this abomination
+        function updateGameArea() {
             myGameArea.clear();
             if (myGameArea.key) {
                 if (myGameArea.key == 37) { moveleft(); }
@@ -137,136 +126,27 @@
                     keyPressed = false;
                 }
             }
+            checkObjectsCollision();
+            addBall();
+            checkForActiveBonus();
+            checkBonusTimers();
+            deleteBall();
+            gamemodeRules();
+            displayScore();
+            displayTime();
+            if (myBallArray.length <= 0) {
+                gameOver();
+            }
             if (gamePaused) {
                 horizontalPlatform.speedX = 0;
                 if (verticalPlatform) {
                     verticalPlatform.speedY = 0;
                 }
-            }
-            if (verticalPlatform) {
-                horizontalPlatform.newPosVer(verticalPlatform);
-                horizontalPlatform.update();
-                verticalPlatform.newPos(horizontalPlatform);
-                verticalPlatform.update();
-                for (let i = 0; i < myBallArray.length; i++) {
-                    myBallArray[i].checkHorizontalPlatform(horizontalPlatform);
-                    myBallArray[i].checkVerticalPlatform(verticalPlatform);
-                }
-            }
-            else {
-                horizontalPlatform.newPos();
-                horizontalPlatform.update();
-                for (let i = 0; i < myBallArray.length; i++) {
-                    myBallArray[i].checkHorizontalPlatform(horizontalPlatform);
-                }
-            }
-            var checkCollision;
-            for (let i = 0; i < tilesArray.length; i++) {
-                tilesArray[i].update();
-                for (let j = 0; j < myBallArray.length; j++) {
-                    checkCollision = myBallArray[j].checkCollisionTile(tilesArray[i]);
-                    if (checkCollision == true) {
-                        if (tilesArray[i].type == 'B') {
-                            countB++;
-                        }
-                        else {
-                            randomBonus(tilesArray[i].x, tilesArray[i].y);
-                        }
-                        tilesArray.splice(i, 1);
-                        i--;
-                        let toAdd = 1;
-                        if (isX2Active) {
-                            toAdd *= 2; 
-                        }
-                        if (isX5Active) {
-                            toAdd *= 5;
-                        }
-                        score += toAdd;
-                        break;
-                    }
-                }
-            }
-            if (countB >= 5) {
-                myBallArray.push(new ball());
-                countB = 0;
-            }
-            for (let i = 0; i < bonusArray.length; i++) {
-                bonusArray[i].update();
-                checkCollision = bonusArray[i].isCaught(horizontalPlatform);
-                if (checkCollision == true) {
-                    if (bonusArray[i].type == "x2") {
-                        isX2Active = true;
-                        x2Timer = time;
-                    }
-                    else if (bonusArray[i].type == "x5") {
-                        isX5Active = true;
-                        x5Timer = time;
-                    } else if (bonusArray[i].type == "sizePlus") {
-                        if (isSizeDwngrActive) {
-                            isSizeDwngrActive = false;
-                            horizontalPlatform.width = startingSize;
-                        }
-                        else {
-                            isSizeUpgrActive = true;
-                            horizontalPlatform.width = startingSize * 1.2;
-                            if (horizontalPlatform.x + horizontalPlatform.width > myGameArea.canvas.width) {
-                                horizontalPlatform.x = myGameArea.canvas.width - horizontalPlatform.width;
-                            }
-                        }
-                        sizeUpgrTimer = time;
-                    } else if (bonusArray[i].type == "sizeMinus") {
-                        if (isSizeUpgrActive) {
-                            isSizeUpgrActive = false;
-                            horizontalPlatform.width = startingSize;
-                            if (horizontalPlatform.x + horizontalPlatform.width > myGameArea.canvas.width) {
-                                horizontalPlatform.x = myGameArea.canvas.width - horizontalPlatform.width;
-                            }
-                        }
-                        else {
-                            isSizeDwngrActive = true;
-                            horizontalPlatform.width = startingSize * 0.8;
-                        }
-                        sizeDwngTimer = time;
-                    } else {
-                        isDirectionsActive = true;
-                        dirTimer = time;
-                    }
-                    bonusArray.splice(i, 1);
-                    i--;
-                }
-                else if (bonusArray[i].y > horizontalPlatform.y + horizontalPlatform.height) {
-                    bonusArray.splice(i, 1);
-                    i--;
-                }
-            }
-            checkBonusTimers();
-            for (let i = 0; i < myBallArray.length; i++) {
-                myBallArray[i].newPos();
-                myBallArray[i].update();
-                myBallArray[i].checkBallCollision();
-                var toDelete = myBallArray[i].checkForDelete();
-                if (toDelete == true) {
-                    myBallArray.splice(i, 1)
-                    i--;
-                }
-            }
-            if (mode == false) {
-                if (time % 5 == 0 || tilesArray.length < 5) {
-                    modeOne();
-                }
-            }
-            else {
-                if (time % 30 == 0 && time != 0 && block == false) {
-                    modeTwo();
-                    block = true;
-                }
-                else if (time % 30 != 0) {
-                    block = false;
-                }
-            }
-            displayScore();
-            if (myBallArray.length <= 0) {
-                gameOver();
+                myGameArea.context.font = (myGameArea.context.canvas.width / 16).toString() + "px Helvetica";
+                myGameArea.context.textAlign = "center";
+                myGameArea.context.fillStyle = "white";
+                myGameArea.context.fillText("Game is paused", myGameArea.canvas.width / 2, myGameArea.canvas.height / 2 - 20);
+                myGameArea.context.fillText("Press start", myGameArea.canvas.width / 2, myGameArea.canvas.height / 2 + 20);
             }
         }
 
@@ -279,6 +159,12 @@
         }
 
     </script>
+    <div style="font-size: large; text-align:center;">
+        SCORE: <span id="displayCurrentScore">0</span>
+    </div>
+    <div style="font-size: large; text-align:center;">
+        TIME: <span id="displayGameTime">0</span>
+    </div>
     <div style="text-align:center;width:auto;" id="upButton">
         <button style="width: 100px" onmousedown="moveup()" onmouseup="clearmove()" ontouchstart="moveup()">UP</button>
     </div>

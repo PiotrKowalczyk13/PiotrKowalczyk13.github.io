@@ -117,7 +117,7 @@ class ball {
                     this.x - this.radius < obj.x + obj.width && this.x > obj.x + obj.width) {
                     this.speedX = this.speedX * (-1);
                 }
-                else if (this.y + this.radius >= obj.y && this.y < obj.y) {
+                else if (this.y + this.radius >= obj.y) {
                     if (this.speedX < 0) {
                         this.speedX = -3;
                     }

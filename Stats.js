@@ -103,7 +103,11 @@ function timer() {
 }
 
 function displayScore() {
-    document.getElementById('display').innerHTML = score;
+    document.getElementById('displayCurrentScore').innerHTML = score;
+}
+
+function displayTime() {
+    document.getElementById('displayGameTime').innerHTML = time;
 }
 
 function showStats() {

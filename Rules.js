@@ -126,3 +126,92 @@ function checkBonusTimers() {
         isDirectionsActive = false;
     }
 }
+
+function checkForActiveBonus() {
+    for (let i = 0; i < bonusArray.length; i++) {
+        bonusArray[i].update();
+        checkCollision = bonusArray[i].isCaught(horizontalPlatform);
+        if (checkCollision == true) {
+            if (bonusArray[i].type == "x2") {
+                isX2Active = true;
+                x2Timer = time;
+            }
+            else if (bonusArray[i].type == "x5") {
+                isX5Active = true;
+                x5Timer = time;
+            } else if (bonusArray[i].type == "sizePlus") {
+                if (isSizeDwngrActive) {
+                    isSizeDwngrActive = false;
+                    horizontalPlatform.width = startingSize;
+                }
+                else {
+                    isSizeUpgrActive = true;
+                    horizontalPlatform.width = startingSize * 1.2;
+                    if (horizontalPlatform.x + horizontalPlatform.width > myGameArea.canvas.width) {
+                        horizontalPlatform.x = myGameArea.canvas.width - horizontalPlatform.width;
+                    }
+                }
+                sizeUpgrTimer = time;
+            } else if (bonusArray[i].type == "sizeMinus") {
+                if (isSizeUpgrActive) {
+                    isSizeUpgrActive = false;
+                    horizontalPlatform.width = startingSize;
+                    if (horizontalPlatform.x + horizontalPlatform.width > myGameArea.canvas.width) {
+                        horizontalPlatform.x = myGameArea.canvas.width - horizontalPlatform.width;
+                    }
+                }
+                else {
+                    isSizeDwngrActive = true;
+                    horizontalPlatform.width = startingSize * 0.8;
+                }
+                sizeDwngTimer = time;
+            } else {
+                isDirectionsActive = true;
+                dirTimer = time;
+            }
+            bonusArray.splice(i, 1);
+            i--;
+        }
+        else if (bonusArray[i].y > horizontalPlatform.y + horizontalPlatform.height) {
+            bonusArray.splice(i, 1);
+            i--;
+        }
+    }
+}
+
+function addBall() {
+    if (countB >= 5) {
+        myBallArray.push(new ball());
+        countB = 0;
+    }
+}
+
+function deleteBall() {
+    for (let i = 0; i < myBallArray.length; i++) {
+        myBallArray[i].newPos();
+        myBallArray[i].update();
+        myBallArray[i].checkBallCollision();
+        var toDelete = myBallArray[i].checkForDelete();
+        if (toDelete == true) {
+            myBallArray.splice(i, 1)
+            i--;
+        }
+    }
+}
+
+function gamemodeRules() {
+    if (mode == false) {
+        if (time % 5 == 0 || tilesArray.length < 5) {
+            modeOne();
+        }
+    }
+    else {
+        if (time % 30 == 0 && time != 0 && block == false) {
+            modeTwo();
+            block = true;
+        }
+        else if (time % 30 != 0) {
+            block = false;
+        }
+    }
+}
