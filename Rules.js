@@ -166,8 +166,13 @@ function checkForActiveBonus() {
                 }
                 sizeDwngTimer = time;
             } else {
-                isDirectionsActive = true;
-                dirTimer = time;
+                if (isDirectionsActive == true) {
+                    isDirectionsActive = false;
+                }
+                else {
+                    isDirectionsActive = true;
+                    dirTimer = time;
+                }
             }
             bonusArray.splice(i, 1);
             i--;

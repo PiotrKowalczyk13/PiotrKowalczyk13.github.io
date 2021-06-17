@@ -35,11 +35,12 @@ function displayStats(stats) {
         for (let i = 0; i < stats.length; i++) {
             let stat = stats[i];
             listHTML += 'ID: ' + (i + 1) + ', '
-                + ' Nickname: ' + stat.nick + ', '
-                + ' Date: ' + stat.date + ', '
-                + ' Points: ' + stat.points + ', '
-                + ' Time: ' + stat.gameTime + ', '
-                + ' Vertical Platform: ' + stat.platform + '\n';
+                + 'Nickname: ' + stat.nick + ', '
+                + 'Date: ' + stat.date + ', '
+                + 'Points: ' + stat.points + ', '
+                + 'Time: ' + stat.gameTime + ', '
+                + 'Vertical Platform: ' + stat.platform + ', '
+                + 'Mode: ' + stat.gamemode + '\n';
         }
     }
     window.alert(listHTML);
@@ -74,18 +75,26 @@ function addScore(db) {
     let date = new Date;
     let month = date.getMonth() + 1;
     let isPlatform;
+    let whichMode;
     if (verticalPlatform) {
         isPlatform = "Yes";
     }
     else {
         isPlatform = "No";
     }
+    if (mode == false) {
+        whichMode = 1;
+    }
+    else {
+        whichMode = 2;
+    }
     let gameData = {
         nick: player,
         date: date.getDate() + "-" + month + "-" + date.getFullYear(),
         points: score,
         gameTime: time + "s",
-        platform: isPlatform
+        platform: isPlatform,
+        gamemode: whichMode
     }
     store.add(gameData)
     tx.oncomplete = function () {

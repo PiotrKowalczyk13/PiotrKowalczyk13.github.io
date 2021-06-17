@@ -6,10 +6,10 @@
     box-sizing: border-box;
 }
 
-.close-button {
+/* Button used to open the contact form - fixed at the bottom of the page */
+.open-button {
     background-color: #555;
-    display: none;
-    color: red;
+    color: white;
     padding: 16px 20px;
     border: none;
     cursor: pointer;
@@ -20,9 +20,8 @@
     width: 280px;
 }
 
-
 /* The popup form - hidden by default */
-.form-popup-login {
+.form-popup {
     display: none;
     position: fixed;
     bottom: 0;
@@ -30,16 +29,6 @@
     border: 3px solid #f1f1f1;
     z-index: 9;
 }
-
-.form-popup-register {
-    display: none;
-    position: fixed;
-    bottom: 0;
-    right: 330px;
-    border: 3px solid #f1f1f1;
-    z-index: 9;
-}
-
 
 /* Add styles to the form container */
 .form-container {
@@ -81,24 +70,26 @@
     }
 
     /* Add some hover effects to buttons */
-    .form-container .btn:hover, .open-button:hover, .close-button:hover {
+    .form-container .btn:hover, .open-button:hover {
         opacity: 1;
     }
 
-.vertical-menu {
-    width: 200px; /* Set a width if you like */
+.btn-group button {
+    background-color: #04AA6D; /* Green background */
+    border: 1px solid green; /* Green border */
+    color: white; /* White text */
+    padding: 10px 24px; /* Some padding */
+    cursor: pointer; /* Pointer/hand icon */
+    width: 25%; /* Set a width if needed */
+    display: block; /* Make the buttons appear below each other */
+    margin: 0 auto;
 }
 
-    .vertical-menu button {
-        background-color: #555;
-        color: white;
-        padding: 16px 20px;
-        border: none;
-        cursor: pointer;
-        opacity: 0.8;
-        width: 280px;
+    .btn-group button:not(:last-child) {
+        border-bottom: none; /* Prevent double borders */
     }
 
-        .vertical-menu button:hover {
-            background-color: #ccc; /* Dark grey background on mouse-over */
-        }
+    /* Add a background color on hover */
+    .btn-group button:hover {
+        background-color: #3e8e41;
+    }
