@@ -116,33 +116,33 @@ class ball {
                 if (this.x + this.radius > obj.x && this.x < obj.x ||
                     this.x - this.radius < obj.x + obj.width && this.x > obj.x + obj.width) {
                     this.speedX = this.speedX * (-1);
+                } 
+            }
+            else if (this.y + this.radius >= obj.y) {
+                if (this.speedX < 0) {
+                    this.speedX = -3;
                 }
-                else if (this.y + this.radius >= obj.y) {
-                    if (this.speedX < 0) {
-                        this.speedX = -3;
-                    }
-                    else if (this.speedX > 0) {
-                        this.speedX = 3;
-                    }
+                else if (this.speedX > 0) {
+                    this.speedX = 3;
+                }
 
-                    if ((this.x >= obj.x && this.x <= obj.x + 0.1 * obj.width)
-                        || (this.x >= obj.x + 0.9 * obj.width && this.x <= obj.x + obj.width)) {
-                        this.speedX = this.speedX * 3;
-                        this.speedY = this.speedY * (-1);
-                    }
-                    else if ((this.x <= obj.x + 0.3 * obj.width && this.x > obj.x + 0.1 * obj.width)
-                        || (this.x >= obj.x + 0.7 * obj.width && this.x < obj.x + 0.9 * obj.width)) {
-                        this.speedX = this.speedX * 2;
-                        this.speedY = this.speedY * (-1);
-                    }
-                    else if ((this.x <= obj.x + 0.4 * obj.width && this.x > obj.x + 0.3 * obj.width)
-                        || (this.x >= obj.x + 0.6 * obj.width && this.x < obj.x + 0.7 * obj.width)) {
-                        this.speedX = this.speedX * 1.5;
-                        this.speedY = this.speedY * (-1);
-                    }
-                    else if (this.x > obj.x + 0.4 * obj.width && this.x < obj.x + 0.6 * obj.width) {
-                        this.speedY = this.speedY * (-1);
-                    }
+                if ((this.x >= obj.x && this.x <= obj.x + 0.1 * obj.width)
+                    || (this.x >= obj.x + 0.9 * obj.width && this.x <= obj.x + obj.width)) {
+                    this.speedX = this.speedX * 3;
+                    this.speedY = this.speedY * (-1);
+                }
+                else if ((this.x <= obj.x + 0.3 * obj.width && this.x > obj.x + 0.1 * obj.width)
+                    || (this.x >= obj.x + 0.7 * obj.width && this.x < obj.x + 0.9 * obj.width)) {
+                    this.speedX = this.speedX * 2;
+                    this.speedY = this.speedY * (-1);
+                }
+                else if ((this.x <= obj.x + 0.4 * obj.width && this.x > obj.x + 0.3 * obj.width)
+                    || (this.x >= obj.x + 0.6 * obj.width && this.x < obj.x + 0.7 * obj.width)) {
+                    this.speedX = this.speedX * 1.5;
+                    this.speedY = this.speedY * (-1);
+                }
+                else if (this.x > obj.x + 0.4 * obj.width && this.x < obj.x + 0.6 * obj.width) {
+                    this.speedY = this.speedY * (-1);
                 }
             }
         }

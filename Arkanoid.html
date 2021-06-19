@@ -21,6 +21,7 @@
     <script src="Stats.js"></script>
     <script src="Rules.js"></script>
     <script src="Collisions.js"></script>
+    <script src="Login.js"></script>
     <script>
 
         var player;
@@ -56,9 +57,14 @@
         var keyPressed = false;
         var gamePaused = false;
 
+        var simpleAI = false;
+
         function startGame() {
             background.src = "background.jpg";
             document.getElementById('buttons').style.display = 'none';
+            if (confirm("Do want to turn on the AI?")) {
+                simpleAI = true;
+            }
             player = "Guest";
 
             if (confirm("Do you want additional layers of tiles showing up or should tiles just fill the gaps?")) {
@@ -126,18 +132,30 @@
                 myGameArea.context.fillText("Game is paused", myGameArea.canvas.width / 2, myGameArea.canvas.height / 2 - 20);
                 myGameArea.context.fillText("Press start", myGameArea.canvas.width / 2, myGameArea.canvas.height / 2 + 20);
             }
-            if (myGameArea.key) {
-                if (myGameArea.key == 37) { moveleft(); }
-                if (myGameArea.key == 39) { moveright(); }
-                if (myGameArea.key == 38) { moveup(); }
-                if (myGameArea.key == 40) { movedown(); }
-            }
-            else {
-                if (keyPressed) {
-                    clearmove();
-                    keyPressed = false;
+            if (simpleAI) {
+                if (Math.abs(myBallArray[0].x - (horizontalPlatform.x + horizontalPlatform.width / 2)) > 5) {
+                    if (myBallArray[0].x < horizontalPlatform.x + horizontalPlatform.width / 2) {
+                        moveleft();
+                    } else if (myBallArray[0].x > horizontalPlatform.x + horizontalPlatform.width / 2) {
+                        moveright();
+                    }
                 }
             }
+            else {
+                if (myGameArea.key) {
+                    if (myGameArea.key == 37) { moveleft(); }
+                    if (myGameArea.key == 39) { moveright(); }
+                    if (myGameArea.key == 38) { moveup(); }
+                    if (myGameArea.key == 40) { movedown(); }
+                }
+                else {
+                    if (keyPressed) {
+                        clearmove();
+                        keyPressed = false;
+                    }
+                }
+            }
+
             checkObjectsCollision();
             addBall();
             checkForActiveBonus();
@@ -169,19 +187,30 @@
             document.getElementById("myRegisterForm").style.display = "none";
         }
 
+        function tryLogin() {
+            var username = document.getElementById("loginUsername");
+            var pswd = document.getElementById("loginPassword");
+
+            var myWorker = new Worker('Login.js');
+            myWorker.postMessage([username, pswd]);
+            myWorker.onmessage = function (e) {
+                var result = e.data;
+            }
+        }
+
     </script>
 
     <div class="form-popup" id="myLoginForm">
-        <form action="/action_page.php" class="form-container">
+        <form class="form-container">
             <h1>Login</h1>
 
-            <label for="email"><b>Email</b></label>
-            <input type="text" placeholder="Enter Email" name="email" required>
+            <label for="email"><b>Login</b></label>
+            <input id="loginUsername" type="text" placeholder="Enter Username" name="login" required>
 
             <label for="psw"><b>Password</b></label>
-            <input type="password" placeholder="Enter Password" name="psw" required>
+            <input id="loginPassword" type="password" placeholder="Enter Password" name="password" required>
 
-            <button type="submit" class="btn">Login</button>
+            <button type="submit" class="btn" onclick="tryLogin()">Login</button>
             <button type="button" class="btn cancel" onclick="closeLoginForm()">Close</button>
         </form>
     </div>
@@ -191,7 +220,7 @@
             <h1>Register</h1>
 
             <label for="email"><b>Email</b></label>
-            <input type="text" placeholder="Enter Email" name="email" required>
+            <input type="text" placeholder="Enter Username" name="username" required>
 
             <label for="psw"><b>Password</b></label>
             <input type="password" placeholder="Enter Password" name="psw" required>
